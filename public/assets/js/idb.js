@@ -5,7 +5,7 @@ const request = indexedDB.open('budget', 1);
 // this event will emit if the database version changes (nonexistant to version 1, v1 to v2, etc.)
 request.onupgradeneeded = function(event) {
   const db = event.target.result;
-  db.createObjectStore('budget', { autoIncrement: true });
+  db.createObjectStore('new_budget', { autoIncrement: true });
 };
 
 // upon a successful 
@@ -22,24 +22,18 @@ request.onerror = function(event) {
 
 function saveRecord(record) {
   const transaction = db.transaction(['new_budget'], 'readwrite');
-  const budgetObjectStore = transaction.objectStore('new_budget');
-  budgetObjectStore.add(record);
+  const store = transaction.objectStore('new_budget');
+  store.add(record);
 };
 
 
 function uploadBudget() {
-
   const transaction = db.transaction(['new_budget'], 'readwrite');
-
-
-  const budgetObjectStore = transaction.objectStore('new_budget');
-
-
-  const getAll = budgetObjectStore.getAll();
+  const store = transaction.objectStore('new_budget');
+  const getAll = store.getAll();
 
 
   getAll.onsuccess = function () {
-
     if (getAll.result.length > 0) {
       fetch("/api/transaction/bulk", {
         method: "POST",
@@ -52,13 +46,18 @@ function uploadBudget() {
         .then((response) => response.json())
         .then(() => {
           const transaction = db.transaction(['new_budget'], 'readwrite');
-          const budgetObjectStore = transaction.objectStore("new_budget");
-          budgetObjectStore.clear();
+          const store = transaction.objectStore("new_budget");
+          store.clear();
           alert("All transactions have been submitted!");
         })
     }
   };
 }
 
+function deletePending() {
+  const transaction = db.transaction(["new_budget"], "readwrite");
+  const store = transaction.objectStore("new_budget");
+  store.clear();
+}
 // listen for app coming back online
 window.addEventListener('online', uploadBudget);

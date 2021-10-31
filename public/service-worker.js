@@ -1,61 +1,75 @@
-const APP_PREFIX = 'Budgeter-';     
-const VERSION = 'version_01';
-const CACHE_NAME = APP_PREFIX + VERSION
+const staticCacheName = 'pages-cache-v1';
+
+
 const FILES_TO_CACHE = [
-  "/public/assets/css/style.css",
-  "/public/assets/js/idb.js",
-  "/public/assets/js/index.js",
-  "/public/assets/service-worker.js",
-  "/public/assets/icons/icon-192x192.png"
+  // "/",
+  // "/index.html",
+  // "/assets/css/styles.css",
+  // "/index.js",
+  // "/idb.js",
+  // "/manifest.json",
+  // "/assets/icons/icon-192x192.png"
 ];
 
+//https://developers.google.com/web/ilt/pwa/lab-caching-files-with-service-worker   great resource
+
+self.addEventListener('install', e => {
+  console.log('Attempting to install service worker and cache static assets');
+  e.waitUntil(
+    caches.open(staticCacheName)
+    .then(cache => {
+      return cache.addAll(FILES_TO_CACHE);
+    })
+  )
+})
+
+
+
 // Respond with cached resources
-self.addEventListener('fetch', function (e) {
-  console.log('fetch request : ' + e.request.url)
+self.addEventListener('fetch', e => {
+  console.log('Fetch event for ', e.request.url);
   e.respondWith(
-    caches.match(e.request).then(function (request) {
-      if (request) { // if cache is available, respond with cache
-        console.log('responding with cache : ' + e.request.url)
-        return request
-      } else {       // if there are no cache, try fetching request
-        console.log('file is not cached, fetching : ' + e.request.url)
-        return fetch(e.request)
+    caches.match(e.request)
+    .then(response => {
+      if (response) {
+        console.log('Found ', e.request.url, ' in cache');
+        return response;
       }
+      console.log('Network request for ', e.request.url);
+      return fetch(e.request)
 
-      // You can omit if/else for console.log & put one line below like this too.
-      // return request || fetch(e.request)
-    })
-  )
-})
+      .then(response => {
+        return caches.open(staticCacheName).then(cache => {
+          cache.put(e.request.url, response.clone());
+          return response;
+        });
+      });
 
-// Cache resources
-self.addEventListener('install', function (e) {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      console.log('installing cache : ' + CACHE_NAME)
-      return cache.addAll(FILES_TO_CACHE)
-    })
-  )
-})
+    }).catch(error => {
 
-// Delete outdated caches
-self.addEventListener('activate', function (e) {
-  e.waitUntil(
-    caches.keys().then(function (keyList) {
-      // `keyList` contains all cache names under your username.github.io
-      // filter out ones that has this app prefix to create keeplist
-      let cacheKeeplist = keyList.filter(function (key) {
-        return key.indexOf(APP_PREFIX);
-      })
-      // add current cache name to keeplist
-      cacheKeeplist.push(CACHE_NAME);
+      console.log(error);
 
-      return Promise.all(keyList.map(function (key, i) {
-        if (cacheKeeplist.indexOf(key) === -1) {
-          console.log('deleting cache : ' + keyList[i] );
-          return caches.delete(keyList[i]);
-        }
-      }));
     })
   );
 });
+
+
+
+self.addEventListener('activate', e => {
+  console.log('Activating new service worker...');
+
+  const cacheAllowlist = [staticCacheName];
+
+  e.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheAllowlist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
