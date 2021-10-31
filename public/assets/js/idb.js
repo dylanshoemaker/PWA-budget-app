@@ -54,10 +54,5 @@ function uploadBudget() {
   };
 }
 
-function deletePending() {
-  const transaction = db.transaction(["new_budget"], "readwrite");
-  const store = transaction.objectStore("new_budget");
-  store.clear();
-}
 // listen for app coming back online
 window.addEventListener('online', uploadBudget);
