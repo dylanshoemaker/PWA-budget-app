@@ -2,10 +2,11 @@ const APP_PREFIX = 'Budgeter-';
 const VERSION = 'version_01';
 const CACHE_NAME = APP_PREFIX + VERSION
 const FILES_TO_CACHE = [
-  "./public/assets/css/style.css",
-  "./public/assets/js/idb.js",
-  "./public/assets/js/index.js",
-  "./public/assets/service-worker.js"
+  "/public/assets/css/style.css",
+  "/public/assets/js/idb.js",
+  "/public/assets/js/index.js",
+  "/public/assets/service-worker.js",
+  "/public/assets/icons/icon-192x192.png"
 ];
 
 // Respond with cached resources
