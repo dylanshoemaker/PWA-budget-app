@@ -27,3 +27,38 @@ function saveRecord(record) {
 };
 
 
+function uploadBudget() {
+
+  const transaction = db.transaction(['new_budget'], 'readwrite');
+
+
+  const budgetObjectStore = transaction.objectStore('new_budget');
+
+
+  const getAll = budgetObjectStore.getAll();
+
+
+  getAll.onsuccess = function () {
+
+    if (getAll.result.length > 0) {
+      fetch("/api/transaction/bulk", {
+        method: "POST",
+        body: JSON.stringify(getAll.result),
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then(() => {
+          const transaction = db.transaction(['new_budget'], 'readwrite');
+          const budgetObjectStore = transaction.objectStore("new_budget");
+          budgetObjectStore.clear();
+          alert("All transactions have been submitted!");
+        })
+    }
+  };
+}
+
+// listen for app coming back online
+window.addEventListener('online', uploadBudget);
