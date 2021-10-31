@@ -2,13 +2,13 @@ const staticCacheName = 'pages-cache-v1';
 
 
 const FILES_TO_CACHE = [
-  // "/",
-  // "/index.html",
-  // "/assets/css/styles.css",
-  // "/index.js",
-  // "/idb.js",
-  // "/manifest.json",
-  // "/assets/icons/icon-192x192.png"
+  "/",
+  "/index.html",
+  "/assets/css/styles.css",
+  "/assets/js/index.js",
+  "/assets/js/idb.js",
+  "/manifest.json",
+  "/assets/icons/icon-192x192.png"
 ];
 
 //https://developers.google.com/web/ilt/pwa/lab-caching-files-with-service-worker   great resource
